@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Prescription Details - ClearDerm{% endblock %}
+
+{% block logout_url %}{% if is_doctor %}{% url 'doctor_logout' %}{% else %}{% url 'patient_logout' %}{% endif %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% if is_doctor %}{% url 'doctor_profile' %}{% else %}{% url 'patient_profile' %}{% endif %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% if is_doctor %}{% url 'doctor_prescriptions' %}{% else %}{% url 'patient_prescriptions' %}{% endif %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Prescriptions
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="prescription-header mb-4">
+                <h2>
+                    <i class="fas fa-prescription-bottle-alt me-3"></i>Prescription Details
+                </h2>
+                <div class="prescription-meta">
+                    <span class="badge bg-primary">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ prescription.created_at|date:"F d, Y" }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="prescription-info mb-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-card">
+                            <h5><i class="fas fa-user-md me-2"></i>Doctor</h5>
+                            <p class="mb-0">{{ prescription.doctor.user.get_full_name }}</p>
+                            <small class="text-muted">{{ prescription.doctor.specialization }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-card">
+                            <h5><i class="fas fa-user-injured me-2"></i>Patient</h5>
+                            <p class="mb-0">{{ prescription.patient.user.get_full_name }}</p>
+                            <small class="text-muted">{{ prescription.patient.user.email }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-card">
+                            <h5><i class="fas fa-calendar-check me-2"></i>Appointment Date</h5>
+                            <p class="mb-0">{{ prescription.appointment.appointment_date|date:"F d, Y" }}</p>
+                            <small class="text-muted">{{ prescription.appointment.appointment_time|time:"H:i" }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-card">
+                            <h5><i class="fas fa-clock me-2"></i>Prescribed On</h5>
+                            <p class="mb-0">{{ prescription.created_at|date:"F d, Y" }}</p>
+                            <small class="text-muted">{{ prescription.created_at|time:"H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prescription-content">
+                <div class="prescription-section mb-4">
+                    <h4 class="section-title">
+                        <i class="fas fa-stethoscope me-2"></i>Diagnosis
+                    </h4>
+                    <div class="section-content">
+                        {{ prescription.diagnosis|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="prescription-section mb-4">
+                    <h4 class="section-title">
+                        <i class="fas fa-pills me-2"></i>Medications
+                    </h4>
+                    <div class="section-content">
+                        {{ prescription.medications|linebreaks }}
+                    </div>
+                </div>
+
+                {% if prescription.advice %}
+                <div class="prescription-section mb-4">
+                    <h4 class="section-title">
+                        <i class="fas fa-lightbulb me-2"></i>Advice & Follow-up
+                    </h4>
+                    <div class="section-content">
+                        {{ prescription.advice|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .prescription-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .prescription-info .info-card {
+        background: var(--bg-light);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+
+    .prescription-info .info-card h5 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .prescription-section {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        color: var(--primary-color);
+        font-weight: 700;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .section-content {
+        color: var(--text-dark);
+        font-size: 1.05rem;
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}

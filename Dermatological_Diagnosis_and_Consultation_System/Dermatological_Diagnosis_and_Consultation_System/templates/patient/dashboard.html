@@ -1,0 +1,566 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Dashboard - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'patient_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'patient_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+<button class="btn btn-outline-primary me-2" id="openChatbotBtn" type="button">
+    <i class="fas fa-robot me-2"></i>Chatbot
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-user-injured me-3"></i>Patient Dashboard
+            </h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-info-circle me-2"></i>Account Information
+                        </h5>
+                        <hr>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-calendar-check text-primary me-2"></i>
+                                <strong>Member Since:</strong>
+                                <span>{{ patient.created_at|date:"F d, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-check-circle text-primary me-2"></i>
+                                <strong>Account Status:</strong>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-search me-2"></i>Find Healthcare Providers
+                        </h5>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'doctor_list' %}" class="btn btn-primary">
+                                <i class="fas fa-user-md me-2"></i>View All Doctors
+                            </a>
+                            <a href="{% url 'hospital_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-hospital me-2"></i>View All Hospitals
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-calendar-alt me-2"></i>My Appointments
+                        </h5>
+                        <hr>
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="{% url 'patient_appointments' %}" class="btn btn-primary">
+                                <i class="fas fa-calendar-check me-2"></i>View My Appointments
+                            </a>
+                            <a href="{% url 'patient_prescriptions' %}" class="btn btn-outline-info">
+                                <i class="fas fa-prescription-bottle-alt me-2"></i>My Prescriptions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-robot me-2"></i>AI Chatbot
+                        </h5>
+                        <hr>
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="{% url 'chatbot' %}" class="btn btn-primary">
+                                <i class="fas fa-comments me-2"></i>Chat with AI Assistant
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-section {
+        background: var(--bg-light);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+    }
+
+    .info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .info-item strong {
+        color: var(--text-dark);
+        min-width: 140px;
+        font-weight: 600;
+    }
+
+    .info-item span {
+        color: var(--text-gray);
+        flex: 1;
+    }
+
+    .info-item i {
+        font-size: 1.1rem;
+    }
+</style>
+
+<!-- Chatbot Modal -->
+<div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h5 class="modal-title" id="chatbotModalLabel">
+                    <i class="fas fa-robot me-2"></i>Dermatology Assistant
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="height: 600px; display: flex; flex-direction: column;">
+                <div class="chatbot-messages-modal" id="chatbotMessagesModal" style="flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa;">
+                    <div class="message bot">
+                        <div class="message-content">
+                            Hello! I'm your dermatology assistant. How can I help you today? You can ask me about skin conditions, symptoms, or general skincare advice. You can also upload images of skin conditions using the image button below.
+                        </div>
+                    </div>
+                </div>
+                <div class="typing-indicator-modal" id="typingIndicatorModal" style="display: none; padding: 10px 20px; background: #f8f9fa;">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+                <div class="chatbot-input-container-modal" style="padding: 15px; background: white; border-top: 1px solid #dee2e6; display: flex; align-items: center; gap: 10px;">
+                    <input type="file" class="d-none" id="chatbotImageInputModal" accept="image/*" />
+                    <button class="btn btn-outline-secondary" id="chatbotUploadBtnModal" title="Upload Image" style="border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <input type="text" class="form-control" id="chatbotInputModal" placeholder="Type your message..." autocomplete="off" style="flex: 1; border-radius: 25px; padding: 10px 20px;">
+                    <button class="btn btn-primary" id="chatbotSendModal" style="border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chatbot-messages-modal {
+        scroll-behavior: smooth;
+    }
+
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .message.user {
+        justify-content: flex-end;
+    }
+
+    .message.bot {
+        justify-content: flex-start;
+    }
+
+    .message-content {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        line-height: 1.4;
+    }
+
+    .message.user .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message.bot .message-content {
+        background: white;
+        color: #333;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .message-image {
+        max-width: 100%;
+        border-radius: 12px;
+        margin-top: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    .image-preview-container {
+        margin-top: 8px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .image-preview {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+
+    .image-remove-btn {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 6px;
+        padding: 10px;
+    }
+
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: #667eea;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatbotModal = new bootstrap.Modal(document.getElementById('chatbotModal'));
+    const openChatbotBtn = document.getElementById('openChatbotBtn');
+    const chatbotInput = document.getElementById('chatbotInputModal');
+    const chatbotSend = document.getElementById('chatbotSendModal');
+    const chatbotMessages = document.getElementById('chatbotMessagesModal');
+    const typingIndicator = document.getElementById('typingIndicatorModal');
+    const chatbotImageInput = document.getElementById('chatbotImageInputModal');
+    const chatbotUploadBtn = document.getElementById('chatbotUploadBtnModal');
+
+    let selectedImage = null;
+    let imagePreviewElement = null;
+
+    // Open modal when chatbot button is clicked
+    openChatbotBtn.addEventListener('click', function() {
+        chatbotModal.show();
+        setTimeout(() => chatbotInput.focus(), 300);
+    });
+
+    // Image upload button click
+    chatbotUploadBtn.addEventListener('click', function() {
+        chatbotImageInput.click();
+    });
+
+    // Handle image selection (with preview)
+    chatbotImageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image size should be less than 10MB.');
+                return;
+            }
+            selectedImage = file;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                if (imagePreviewElement) {
+                    imagePreviewElement.remove();
+                }
+
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'image-preview-container';
+
+                const previewImg = document.createElement('img');
+                previewImg.src = event.target.result;
+                previewImg.className = 'image-preview';
+                previewImg.alt = 'Image preview';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'image-remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = function() {
+                    selectedImage = null;
+                    previewContainer.remove();
+                    imagePreviewElement = null;
+                    chatbotImageInput.value = '';
+                    chatbotSend.disabled = !chatbotInput.value.trim();
+                };
+
+                previewContainer.appendChild(previewImg);
+                previewContainer.appendChild(removeBtn);
+                chatbotMessages.appendChild(previewContainer);
+                imagePreviewElement = previewContainer;
+                scrollToBottom();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function sendMessage() {
+        const message = chatbotInput.value.trim();
+        if (!message && !selectedImage) return;
+
+        if (selectedImage) {
+            sendImageWithMessage(message);
+        } else {
+            sendTextMessage(message);
+        }
+    }
+
+    function sendTextMessage(message) {
+        addMessage(message, 'user');
+        chatbotInput.value = '';
+        chatbotSend.disabled = true;
+
+        typingIndicator.style.display = 'block';
+        scrollToBottom();
+
+        fetch('{% url "chatbot_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            typingIndicator.style.display = 'none';
+            addMessage(data.response, 'bot', data.image_url, null, data.ml_prediction);
+            chatbotSend.disabled = false;
+            chatbotInput.focus();
+        })
+        .catch(error => {
+            typingIndicator.style.display = 'none';
+            addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            chatbotSend.disabled = false;
+            chatbotInput.focus();
+            console.error('Error:', error);
+        });
+    }
+
+    function sendImageWithMessage(message) {
+        const formData = new FormData();
+        formData.append('image', selectedImage);
+        if (message) {
+            formData.append('message', message);
+        }
+
+        addMessage(message || 'Image uploaded', 'user', null, selectedImage);
+
+        // Remove preview
+        if (imagePreviewElement) {
+            imagePreviewElement.remove();
+            imagePreviewElement = null;
+        }
+
+        chatbotInput.value = '';
+        chatbotSend.disabled = true;
+        chatbotImageInput.value = '';
+        selectedImage = null;
+
+        typingIndicator.style.display = 'block';
+        scrollToBottom();
+
+        fetch('{% url "chatbot_api" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            typingIndicator.style.display = 'none';
+            if (data.error) {
+                addMessage(data.response, 'bot');
+            } else {
+                addMessage(data.response, 'bot', data.image_url, null, data.ml_prediction);
+            }
+            chatbotSend.disabled = false;
+            chatbotInput.focus();
+        })
+        .catch(error => {
+            typingIndicator.style.display = 'none';
+            addMessage('Sorry, I encountered an error uploading the image. Please try again.', 'bot');
+            chatbotSend.disabled = false;
+            chatbotInput.focus();
+            console.error('Error:', error);
+        });
+    }
+
+    function addMessage(text, type, imageUrl = null, imageFile = null, mlPrediction = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.className = 'message-image';
+                contentDiv.appendChild(img);
+            };
+            reader.readAsDataURL(imageFile);
+        } else if (imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.className = 'message-image';
+            contentDiv.appendChild(img);
+        }
+
+        if (text) {
+            let htmlText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            contentDiv.innerHTML += htmlText;
+        }
+
+        if (mlPrediction && mlPrediction.has_disease) {
+            const doctorButton = document.createElement('a');
+            doctorButton.href = '{% url "doctor_list" %}';
+            doctorButton.className = 'btn btn-primary btn-sm';
+            doctorButton.style.cssText = 'margin-top: 15px; display: inline-block;';
+            doctorButton.textContent = '👨‍⚕️ View Available Doctors';
+            doctorButton.target = '_blank';
+            contentDiv.appendChild(doctorButton);
+        }
+
+        messageDiv.appendChild(contentDiv);
+        chatbotMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    chatbotSend.addEventListener('click', sendMessage);
+
+    chatbotInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    chatbotInput.addEventListener('input', function() {
+        chatbotSend.disabled = !this.value.trim() && !selectedImage;
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Reset chat when modal is closed
+    document.getElementById('chatbotModal').addEventListener('hidden.bs.modal', function() {
+        chatbotMessages.innerHTML = '<div class="message bot"><div class="message-content">Hello! I\'m your dermatology assistant. How can I help you today? You can ask me about skin conditions, symptoms, or general skincare advice. You can also upload images of skin conditions using the image button below.</div></div>';
+        chatbotInput.value = '';
+        selectedImage = null;
+        if (imagePreviewElement) {
+            imagePreviewElement.remove();
+            imagePreviewElement = null;
+        }
+        chatbotImageInput.value = '';
+        chatbotSend.disabled = true;
+    });
+});
+</script>
+{% endblock %}
+

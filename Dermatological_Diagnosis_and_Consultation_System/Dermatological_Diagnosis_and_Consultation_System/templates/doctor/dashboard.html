@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctor Dashboard - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'doctor_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'doctor_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-user-md me-3"></i>Doctor Dashboard
+            </h2>
+            <div class="row">
+                {% if doctor.hospital %}
+                <div class="col-md-6 mb-4">
+                    <div class="info-section hospital-section">
+                        <h5>
+                            <i class="fas fa-hospital me-2"></i>Hospital Affiliation
+                        </h5>
+                        <hr>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-hospital text-primary me-2"></i>
+                                <strong>Hospital Name:</strong>
+                                <span>{{ doctor.hospital.hospital_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                <strong>Address:</strong>
+                                <span>{{ doctor.hospital.address }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-phone text-primary me-2"></i>
+                                <strong>Phone:</strong>
+                                <span>{{ doctor.hospital.phone_number }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                <strong>Email:</strong>
+                                <span>{{ doctor.hospital.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="{% if doctor.hospital %}col-md-6{% else %}col-md-8 mx-auto{% endif %} mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-info-circle me-2"></i>Account Information
+                        </h5>
+                        <hr>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-calendar-check text-primary me-2"></i>
+                                <strong>Member Since:</strong>
+                                <span>{{ doctor.created_at|date:"F d, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-check-circle text-primary me-2"></i>
+                                <strong>Account Status:</strong>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-calendar-alt me-2"></i>Schedule Management
+                        </h5>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'doctor_schedules' %}" class="btn btn-primary">
+                                <i class="fas fa-calendar-check me-2"></i>Manage Schedules
+                            </a>
+                            <a href="{% url 'doctor_add_schedule' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Add New Schedule
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-calendar-check me-2"></i>Appointments
+                        </h5>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'doctor_appointments' %}" class="btn btn-primary">
+                                <i class="fas fa-list me-2"></i>View Appointments
+                            </a>
+                            <a href="{% url 'doctor_prescriptions' %}" class="btn btn-outline-info">
+                                <i class="fas fa-prescription-bottle-alt me-2"></i>My Prescriptions
+                            </a>
+                            <a href="{% url 'doctor_appointments' %}?status=pending" class="btn btn-outline-warning">
+                                <i class="fas fa-clock me-2"></i>Pending Requests
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-section {
+        background: var(--bg-light);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+    }
+
+    .info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .info-item strong {
+        color: var(--text-dark);
+        min-width: 180px;
+        font-weight: 600;
+    }
+
+    .info-item span {
+        color: var(--text-gray);
+        flex: 1;
+    }
+
+    .info-item i {
+        font-size: 1.1rem;
+    }
+
+    .hospital-section {
+        border: 2px solid var(--primary-color);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    }
+
+    .hospital-section h5 {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+

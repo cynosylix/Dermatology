@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Appointment - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'doctor_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'doctor_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'doctor_appointments' %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Appointments
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-times-circle me-3"></i>Cancel Appointment
+            </h2>
+
+            <div class="appointment-details-card mb-4">
+                <h4>Appointment Details</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-user-injured me-2"></i>
+                        <strong>Patient:</strong>
+                        <span>{{ appointment.patient.user.get_full_name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar me-2"></i>
+                        <strong>Date:</strong>
+                        <span>{{ appointment.appointment_date|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>Time:</strong>
+                        <span>{{ appointment.appointment_time|time:"H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning alert-custom alert-warning-custom mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Are you sure you want to cancel this appointment?</strong> The patient will be notified.
+            </div>
+
+            <form method="post" action="{% url 'cancel_appointment_doctor' appointment.id %}">
+                {% csrf_token %}
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-danger" style="padding: 14px 30px;">
+                        <i class="fas fa-times me-2"></i>Yes, Cancel Appointment
+                    </button>
+                    <a href="{% url 'doctor_appointments' %}" class="btn btn-outline-secondary" style="padding: 14px 30px;">
+                        <i class="fas fa-arrow-left me-2"></i>No, Go Back
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .back-link {
+        margin-bottom: 25px;
+    }
+    
+    .back-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+    
+    .back-link a:hover {
+        background: rgba(37, 99, 235, 0.1);
+        transform: translateX(-5px);
+    }
+
+    .appointment-details-card {
+        background: var(--bg-light);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+    }
+
+    .appointment-details-card h4 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .detail-item strong {
+        color: var(--text-dark);
+        font-weight: 600;
+        min-width: 120px;
+    }
+
+    .detail-item span {
+        color: var(--text-gray);
+    }
+</style>
+{% endblock %}

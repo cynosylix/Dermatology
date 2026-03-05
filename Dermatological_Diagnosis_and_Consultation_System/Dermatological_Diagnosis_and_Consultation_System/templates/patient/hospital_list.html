@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}Find a Hospital - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'patient_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'patient_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'patient_dashboard' %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">
+                    <i class="fas fa-hospital me-3"></i>Find a Hospital
+                </h2>
+                <a href="{% url 'doctor_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-user-md me-2"></i>View All Doctors
+                </a>
+            </div>
+            <p class="text-muted mb-4" style="font-size: 1.1rem;">
+                Browse our list of registered hospitals and their doctors. Click on a hospital to see doctors available there.
+            </p>
+
+            {% if hospitals %}
+                <div class="row">
+                    {% for hospital in hospitals %}
+                    <div class="col-md-6 mb-4">
+                        <div class="hospital-card">
+                            <div class="hospital-header">
+                                <h3 class="hospital-name">
+                                    <i class="fas fa-hospital me-2"></i>
+                                    {{ hospital.hospital_name }}
+                                </h3>
+                            </div>
+                            
+                            <div class="hospital-info">
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <strong>Address:</strong>
+                                    <span>{{ hospital.address }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-phone"></i>
+                                    <strong>Phone:</strong>
+                                    <span>{{ hospital.phone_number }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <strong>Email:</strong>
+                                    <span>{{ hospital.email }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-bed"></i>
+                                    <strong>Total Beds:</strong>
+                                    <span>{{ hospital.total_beds }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-user-md"></i>
+                                    <strong>Doctors:</strong>
+                                    <span>{{ hospital.doctors.count }} doctor{{ hospital.doctors.count|pluralize }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="hospital-actions mt-3">
+                                <a href="{% url 'hospital_doctors' hospital.id %}" class="btn btn-primary w-100">
+                                    <i class="fas fa-user-md me-2"></i>View Doctors at This Hospital
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-hospitals">
+                    <i class="fas fa-hospital"></i>
+                    <h4>No hospitals available at the moment</h4>
+                    <p class="text-muted">Please check back later or contact our support team.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .back-link {
+        margin-bottom: 25px;
+    }
+    
+    .back-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+    
+    .back-link a:hover {
+        background: rgba(37, 99, 235, 0.1);
+        transform: translateX(-5px);
+    }
+
+    .hospital-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        padding: 30px;
+        margin-bottom: 25px;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .hospital-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    }
+    
+    .hospital-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .hospital-header {
+        margin-bottom: 20px;
+    }
+    
+    .hospital-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .hospital-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .hospital-info .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--bg-light);
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .hospital-info .info-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .hospital-info .info-item strong {
+        color: var(--text-dark);
+        min-width: 120px;
+        font-weight: 600;
+    }
+    
+    .hospital-info .info-item span {
+        color: var(--text-gray);
+        flex: 1;
+    }
+
+    .hospital-info .info-item i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        width: 20px;
+    }
+
+    .hospital-actions {
+        border-top: 2px solid var(--border-color);
+        padding-top: 15px;
+    }
+    
+    .no-hospitals {
+        text-align: center;
+        padding: 60px 40px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .no-hospitals i {
+        font-size: 4rem;
+        color: var(--text-gray);
+        margin-bottom: 20px;
+    }
+
+    .no-hospitals h4 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}

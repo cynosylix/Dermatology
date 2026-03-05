@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Hospital Registration - ClearDerm{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 15px;"></i>
+            <h2>Hospital Registration</h2>
+            <p class="text-muted">Create your hospital account</p>
+        </div>
+        <form method="post" action="{% url 'hospital_register' %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="id_username" class="form-label">
+                    <i class="fas fa-user me-2"></i>Username
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="form-error">{{ form.username.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label for="id_first_name" class="form-label">
+                        <i class="fas fa-id-card me-2"></i>Contact Person First Name
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="form-error">{{ form.first_name.errors|first }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label for="id_last_name" class="form-label">
+                        <i class="fas fa-id-card me-2"></i>Contact Person Last Name
+                    </label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="form-error">{{ form.last_name.errors|first }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="id_email" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Contact Email
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="form-error">{{ form.email.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_hospital_name" class="form-label">
+                    <i class="fas fa-hospital me-2"></i>Hospital Name
+                </label>
+                {{ form.hospital_name }}
+                {% if form.hospital_name.errors %}
+                    <div class="form-error">{{ form.hospital_name.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_registration_number" class="form-label">
+                    <i class="fas fa-certificate me-2"></i>Registration Number
+                </label>
+                {{ form.registration_number }}
+                {% if form.registration_number.errors %}
+                    <div class="form-error">{{ form.registration_number.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_address" class="form-label">
+                    <i class="fas fa-map-marker-alt me-2"></i>Address
+                </label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <div class="form-error">{{ form.address.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_phone_number" class="form-label">
+                    <i class="fas fa-phone me-2"></i>Phone Number
+                </label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                    <div class="form-error">{{ form.phone_number.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_hospital_email" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Hospital Email
+                </label>
+                {{ form.hospital_email }}
+                {% if form.hospital_email.errors %}
+                    <div class="form-error">{{ form.hospital_email.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_total_beds" class="form-label">
+                    <i class="fas fa-bed me-2"></i>Total Beds
+                </label>
+                {{ form.total_beds }}
+                {% if form.total_beds.errors %}
+                    <div class="form-error">{{ form.total_beds.errors|first }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_password1" class="form-label">
+                    <i class="fas fa-lock me-2"></i>Password
+                </label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <div class="form-error">{{ form.password1.errors|first }}</div>
+                {% elif form.password1.help_text %}
+                    <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <label for="id_password2" class="form-label">
+                    <i class="fas fa-lock me-2"></i>Confirm Password
+                </label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <div class="form-error">{{ form.password2.errors|first }}</div>
+                {% endif %}
+            </div>
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-custom alert-danger-custom mb-4">
+                    {% for error in form.non_field_errors %}
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary w-100 mb-4" style="padding: 14px;">
+                <i class="fas fa-user-plus me-2"></i>Register
+            </button>
+            <div class="text-center">
+                <p>Already have an account? <a href="{% url 'hospital_login' %}" class="fw-bold">Login here</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

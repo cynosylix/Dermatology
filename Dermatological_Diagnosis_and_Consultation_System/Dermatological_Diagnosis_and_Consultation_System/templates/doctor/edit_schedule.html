@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Schedule - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'doctor_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'doctor_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'doctor_schedules' %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Schedules
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-edit me-3"></i>Edit Appointment Schedule
+            </h2>
+            <p class="text-muted mb-4">Update your appointment schedule details.</p>
+
+            <form method="post" action="{% url 'doctor_edit_schedule' schedule.id %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="id_day_of_week" class="form-label">
+                            <i class="fas fa-calendar-day me-2"></i>Day of Week
+                        </label>
+                        {{ form.day_of_week }}
+                        {% if form.day_of_week.errors %}
+                            <div class="form-error">{{ form.day_of_week.errors|first }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label for="id_appointment_type" class="form-label">
+                            <i class="fas fa-tasks me-2"></i>Appointment Type
+                        </label>
+                        {{ form.appointment_type }}
+                        {% if form.appointment_type.errors %}
+                            <div class="form-error">{{ form.appointment_type.errors|first }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <label for="id_start_time" class="form-label">
+                            <i class="fas fa-clock me-2"></i>Start Time
+                        </label>
+                        {{ form.start_time }}
+                        {% if form.start_time.errors %}
+                            <div class="form-error">{{ form.start_time.errors|first }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <label for="id_end_time" class="form-label">
+                            <i class="fas fa-clock me-2"></i>End Time
+                        </label>
+                        {{ form.end_time }}
+                        {% if form.end_time.errors %}
+                            <div class="form-error">{{ form.end_time.errors|first }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <label for="id_duration_minutes" class="form-label">
+                            <i class="fas fa-hourglass-half me-2"></i>Duration (minutes)
+                        </label>
+                        {{ form.duration_minutes }}
+                        {% if form.duration_minutes.errors %}
+                            <div class="form-error">{{ form.duration_minutes.errors|first }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Duration of each appointment slot</small>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        {{ form.is_available }}
+                        <label class="form-check-label" for="id_is_available">
+                            <i class="fas fa-check-circle me-2"></i>Available
+                        </label>
+                    </div>
+                    {% if form.is_available.errors %}
+                        <div class="form-error">{{ form.is_available.errors|first }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Uncheck to temporarily disable this schedule</small>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-custom alert-danger-custom mb-4">
+                        {% for error in form.non_field_errors %}
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary" style="padding: 14px 30px;">
+                        <i class="fas fa-save me-2"></i>Update Schedule
+                    </button>
+                    <a href="{% url 'doctor_schedules' %}" class="btn btn-outline-secondary" style="padding: 14px 30px;">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .back-link {
+        margin-bottom: 25px;
+    }
+    
+    .back-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+    
+    .back-link a:hover {
+        background: rgba(37, 99, 235, 0.1);
+        transform: translateX(-5px);
+    }
+
+    .form-check {
+        padding: 15px;
+        background: var(--bg-light);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+
+    .form-check-input {
+        margin-top: 0.3rem;
+    }
+</style>
+{% endblock %}

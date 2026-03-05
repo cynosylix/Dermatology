@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Hospital Dashboard - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'hospital_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'hospital_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-hospital me-3"></i>Hospital Dashboard
+            </h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-info-circle me-2"></i>Account Information
+                        </h5>
+                        <hr>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-calendar-check text-primary me-2"></i>
+                                <strong>Member Since:</strong>
+                                <span>{{ hospital.created_at|date:"F d, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-check-circle text-primary me-2"></i>
+                                <strong>Account Status:</strong>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="info-section">
+                        <h5>
+                            <i class="fas fa-user-md me-2"></i>Quick Actions
+                        </h5>
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'hospital_doctors' %}" class="btn btn-primary">
+                                <i class="fas fa-user-md me-2"></i>Manage Doctors
+                            </a>
+                            <a href="{% url 'hospital_add_doctor' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Add New Doctor
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-section {
+        background: var(--bg-light);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+    }
+
+    .info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .info-item strong {
+        color: var(--text-dark);
+        min-width: 180px;
+        font-weight: 600;
+    }
+
+    .info-item span {
+        color: var(--text-gray);
+        flex: 1;
+    }
+
+    .info-item i {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+

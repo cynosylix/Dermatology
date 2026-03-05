@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Doctors - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'hospital_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'hospital_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'hospital_dashboard' %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-user-md me-3"></i>Manage Doctors
+                </h2>
+                <a href="{% url 'hospital_add_doctor' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add New Doctor
+                </a>
+            </div>
+
+            {% if doctors %}
+                <div class="row">
+                    {% for doctor in doctors %}
+                    <div class="col-md-6 mb-4">
+                        <div class="doctor-card">
+                            <div class="doctor-header">
+                                <h4 class="doctor-name">
+                                    <i class="fas fa-user-md me-2"></i>
+                                    Dr. {{ doctor.user.get_full_name }}
+                                </h4>
+                                <span class="specialization-badge">{{ doctor.get_specialization_display }}</span>
+                            </div>
+                            
+                            <div class="doctor-info">
+                                <div class="info-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <strong>Email:</strong>
+                                    <span>{{ doctor.user.email }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-phone"></i>
+                                    <strong>Phone:</strong>
+                                    <span>{{ doctor.phone_number }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <strong>Experience:</strong>
+                                    <span>{{ doctor.years_of_experience }} years</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-certificate"></i>
+                                    <strong>License:</strong>
+                                    <span>{{ doctor.license_number }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <strong>Added:</strong>
+                                    <span>{{ doctor.created_at|date:"F d, Y" }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="doctor-actions mt-3">
+                                <a href="{% url 'hospital_doctor_appointments' doctor.id %}" class="btn btn-primary me-2">
+                                    <i class="fas fa-clipboard-list me-2"></i>View Activities
+                                </a>
+                                <form method="post" action="{% url 'hospital_delete_doctor' doctor.id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to remove this doctor? This action cannot be undone.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash me-2"></i>Remove Doctor
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-doctors">
+                    <i class="fas fa-user-md"></i>
+                    <h4>No doctors added yet</h4>
+                    <p class="text-muted">Start by adding your first doctor to the hospital.</p>
+                    <a href="{% url 'hospital_add_doctor' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus me-2"></i>Add First Doctor
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .back-link {
+        margin-bottom: 25px;
+    }
+    
+    .back-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+    
+    .back-link a:hover {
+        background: rgba(37, 99, 235, 0.1);
+        transform: translateX(-5px);
+    }
+
+    .doctor-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        padding: 30px;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .doctor-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    }
+    
+    .doctor-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .doctor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .doctor-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .specialization-badge {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .doctor-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .doctor-info .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--bg-light);
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .doctor-info .info-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .doctor-info .info-item strong {
+        color: var(--text-dark);
+        min-width: 120px;
+        font-weight: 600;
+    }
+    
+    .doctor-info .info-item span {
+        color: var(--text-gray);
+        flex: 1;
+    }
+
+    .doctor-info .info-item i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        width: 20px;
+    }
+
+    .doctor-actions {
+        border-top: 2px solid var(--border-color);
+        padding-top: 15px;
+    }
+    
+    .no-doctors {
+        text-align: center;
+        padding: 60px 40px;
+        background: var(--bg-light);
+        border-radius: 20px;
+        border: 2px dashed var(--border-color);
+    }
+
+    .no-doctors i {
+        font-size: 4rem;
+        color: var(--text-gray);
+        margin-bottom: 20px;
+    }
+
+    .no-doctors h4 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}

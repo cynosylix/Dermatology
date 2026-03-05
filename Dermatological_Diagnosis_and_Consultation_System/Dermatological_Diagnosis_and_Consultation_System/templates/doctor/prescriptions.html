@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}My Prescriptions - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'doctor_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'doctor_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'doctor_dashboard' %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-prescription-bottle-alt me-3"></i>My Prescriptions
+            </h2>
+            <p class="text-muted mb-4">All prescriptions you have created for your patients.</p>
+
+            {% if prescriptions %}
+                <div class="prescriptions-list">
+                    {% for prescription in prescriptions %}
+                    <div class="prescription-card">
+                        <div class="prescription-header">
+                            <div>
+                                <h4 class="prescription-patient">
+                                    <i class="fas fa-user-injured me-2"></i>
+                                    {{ prescription.patient.user.get_full_name }}
+                                </h4>
+                                <p class="prescription-date">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    Prescribed on {{ prescription.created_at|date:"F d, Y" }}
+                                </p>
+                            </div>
+                            <a href="{% url 'view_prescription' prescription.id %}" class="btn btn-primary">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a>
+                        </div>
+                        
+                        <div class="prescription-preview">
+                            <div class="preview-item">
+                                <strong><i class="fas fa-stethoscope me-2"></i>Diagnosis:</strong>
+                                <span>{{ prescription.diagnosis|truncatewords:20 }}</span>
+                            </div>
+                            <div class="preview-item">
+                                <strong><i class="fas fa-pills me-2"></i>Medications:</strong>
+                                <span>{{ prescription.medications|truncatewords:15 }}</span>
+                            </div>
+                            <div class="preview-item">
+                                <strong><i class="fas fa-calendar-check me-2"></i>Appointment:</strong>
+                                <span>{{ prescription.appointment.appointment_date|date:"F d, Y" }} at {{ prescription.appointment.appointment_time|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-prescriptions">
+                    <i class="fas fa-prescription-bottle-alt"></i>
+                    <h4>No Prescriptions</h4>
+                    <p class="text-muted">You haven't created any prescriptions yet.</p>
+                    <a href="{% url 'doctor_appointments' %}" class="btn btn-primary">
+                        <i class="fas fa-calendar me-2"></i>View Appointments
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .prescriptions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .prescription-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        border: 2px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+    }
+
+    .prescription-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .prescription-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .prescription-patient {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 5px 0;
+    }
+
+    .prescription-date {
+        color: var(--text-gray);
+        margin: 0;
+    }
+
+    .prescription-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .preview-item {
+        padding: 10px;
+        background: var(--bg-light);
+        border-radius: 8px;
+    }
+
+    .preview-item strong {
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .no-prescriptions {
+        text-align: center;
+        padding: 60px 40px;
+        background: var(--bg-light);
+        border-radius: 20px;
+        border: 2px dashed var(--border-color);
+    }
+
+    .no-prescriptions i {
+        font-size: 4rem;
+        color: var(--text-gray);
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}

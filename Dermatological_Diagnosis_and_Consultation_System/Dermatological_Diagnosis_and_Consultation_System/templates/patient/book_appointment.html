@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Appointment - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'patient_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'patient_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'view_doctor_schedules' doctor.id %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Schedules
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="doctor-header-section mb-4">
+                <h2>
+                    <i class="fas fa-calendar-plus me-3"></i>Book Appointment
+                </h2>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-user-md me-2"></i><strong>Doctor:</strong> Dr. {{ doctor.user.get_full_name }}
+                </p>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-calendar-day me-2"></i><strong>Day:</strong> {{ schedule.get_day_of_week_display }}
+                </p>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-clock me-2"></i><strong>Available Time:</strong> {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                </p>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-{% if schedule.appointment_type == 'online' %}video{% else %}building{% endif %} me-2"></i><strong>Type:</strong> {{ schedule.get_appointment_type_display }}
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'book_appointment' doctor.id schedule.id %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="id_appointment_date" class="form-label">
+                            <i class="fas fa-calendar me-2"></i>Appointment Date
+                        </label>
+                        {{ form.appointment_date }}
+                        {% if form.appointment_date.errors %}
+                            <div class="form-error">{{ form.appointment_date.errors|first }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select a date for your appointment</small>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label for="id_appointment_time" class="form-label">
+                            <i class="fas fa-clock me-2"></i>Appointment Time
+                        </label>
+                        {{ form.appointment_time }}
+                        {% if form.appointment_time.errors %}
+                            <div class="form-error">{{ form.appointment_time.errors|first }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Time must be between {{ schedule.start_time|time:"H:i" }} and {{ schedule.end_time|time:"H:i" }}</small>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_notes" class="form-label">
+                        <i class="fas fa-sticky-note me-2"></i>Notes (Optional)
+                    </label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="form-error">{{ form.notes.errors|first }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Describe your symptoms or reason for appointment</small>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-custom alert-danger-custom mb-4">
+                        {% for error in form.non_field_errors %}
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="alert alert-info alert-custom alert-info-custom mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Your appointment will be pending until the doctor confirms it. You will be notified once confirmed.
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary" style="padding: 14px 30px;">
+                        <i class="fas fa-calendar-check me-2"></i>Book Appointment
+                    </button>
+                    <a href="{% url 'view_doctor_schedules' doctor.id %}" class="btn btn-outline-secondary" style="padding: 14px 30px;">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .back-link {
+        margin-bottom: 25px;
+    }
+    
+    .back-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+    
+    .back-link a:hover {
+        background: rgba(37, 99, 235, 0.1);
+        transform: translateX(-5px);
+    }
+
+    .doctor-header-section {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        padding: 25px;
+        border-radius: 15px;
+        border-left: 5px solid var(--primary-color);
+    }
+
+    .doctor-header-section h2 {
+        color: var(--primary-color);
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}

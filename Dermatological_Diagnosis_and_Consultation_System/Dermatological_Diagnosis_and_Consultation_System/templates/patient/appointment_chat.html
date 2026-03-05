@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat - ClearDerm{% endblock %}
+
+{% block logout_url %}{% if is_patient %}{% url 'patient_logout' %}{% else %}{% url 'doctor_logout' %}{% endif %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% if is_patient %}{% url 'patient_profile' %}{% else %}{% url 'doctor_profile' %}{% endif %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% if is_patient %}{% url 'patient_appointments' %}{% else %}{% url 'doctor_appointments' %}{% endif %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Appointments
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="chat-header">
+                <h2>
+                    <i class="fas fa-comments me-3"></i>Chat
+                </h2>
+                <div class="chat-info">
+                    <p class="mb-1">
+                        <strong>{% if is_patient %}Doctor:{% else %}Patient:{% endif %}</strong>
+                        <span>{{ other_party_name }}</span>
+                    </p>
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-calendar me-2"></i>{{ appointment.appointment_date|date:"F d, Y" }} at {{ appointment.appointment_time|time:"H:i" }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    {% for message in chat_messages %}
+                    <div class="message {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+                        <div class="message-header">
+                            <strong>{{ message.sender.get_full_name }}</strong>
+                            <span class="message-time">{{ message.created_at|date:"M d, H:i" }}</span>
+                        </div>
+                        <div class="message-body">
+                            {% if message.message %}
+                                <div class="message-text">
+                                    {{ message.message|linebreaks }}
+                                </div>
+                            {% endif %}
+                            {% if message.image %}
+                                <div class="message-image mt-2">
+                                    <a href="{{ message.image.url }}" target="_blank">
+                                        <img src="{{ message.image.url }}" alt="Shared image" class="img-fluid rounded shadow-sm chat-image">
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="no-messages">
+                        <i class="fas fa-comments"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="chat-input-container">
+                    <form id="chat-form" class="chat-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="input-group mb-2">
+                            <textarea 
+                                id="message-input" 
+                                name="message"
+                                class="form-control" 
+                                rows="2" 
+                                placeholder="Type your message here..."></textarea>
+                            <button type="submit" class="btn btn-primary" id="send-button">
+                                <i class="fas fa-paper-plane"></i>
+                                Send
+                            </button>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="btn btn-outline-secondary mb-0" for="image-input">
+                                <i class="fas fa-image me-2"></i>Attach Image
+                            </label>
+                            <input type="file" id="image-input" name="image" accept="image/*" class="d-none">
+                            <span id="image-name" class="text-muted small"></span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-header {
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+    }
+
+    .chat-header h2 {
+        margin-bottom: 15px;
+    }
+
+    .chat-info {
+        background: var(--bg-light);
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .chat-info strong {
+        color: var(--primary-color);
+    }
+
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 600px;
+        background: white;
+        border-radius: 15px;
+        border: 2px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 4px;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-sm);
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-sent {
+        background: var(--primary-color);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+    }
+
+    .message-received {
+        background: white;
+        color: var(--text-dark);
+        margin-right: auto;
+        border-bottom-left-radius: 5px;
+        border: 1px solid var(--border-color);
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+    }
+
+    .message-sent .message-header {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .message-received .message-header strong {
+        color: var(--primary-color);
+    }
+
+    .message-time {
+        opacity: 0.7;
+        font-size: 0.8rem;
+    }
+
+    .message-body {
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+    .chat-image {
+        max-height: 220px;
+        width: auto;
+        display: block;
+    }
+
+    .no-messages {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-gray);
+    }
+
+    .no-messages i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .chat-input-container {
+        border-top: 2px solid var(--border-color);
+        padding: 15px;
+        background: white;
+    }
+
+    .chat-form .input-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-form textarea {
+        flex: 1;
+        resize: none;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        padding: 12px;
+        font-family: inherit;
+    }
+
+    .chat-form textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .chat-form button {
+        padding: 12px 24px;
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    .chat-form button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .message {
+            max-width: 85%;
+        }
+
+        .chat-container {
+            height: 500px;
+        }
+    }
+</style>
+
+<script>
+    const appointmentId = {{ appointment.id }};
+    const sendMessageUrl = "{% if is_patient %}{% url 'send_chat_message' appointment.id %}{% else %}{% url 'doctor_send_chat_message' appointment.id %}{% endif %}";
+    const getMessagesUrl = "{% if is_patient %}{% url 'get_chat_messages' appointment.id %}{% else %}{% url 'doctor_get_chat_messages' appointment.id %}{% endif %}";
+    let lastMessageId = {{ chat_messages.last.id|default:0 }};
+    let pollingInterval;
+
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const imageInput = document.getElementById('image-input');
+    const imageName = document.getElementById('image-name');
+    const sendButton = document.getElementById('send-button');
+
+    // Show selected image name
+    imageInput.addEventListener('change', () => {
+        if (imageInput.files.length > 0) {
+            imageName.textContent = imageInput.files[0].name;
+        } else {
+            imageName.textContent = '';
+        }
+    });
+
+    // Scroll to bottom on load
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Format message HTML
+    function formatMessage(message) {
+        const isSent = message.is_sender;
+        const messageClass = isSent ? 'message-sent' : 'message-received';
+        const hasText = message.message && message.message.length > 0;
+        const hasImage = message.image_url;
+
+        let bodyHtml = '';
+        if (hasText) {
+            const messageHtml = message.message.replace(/\n/g, '<br>');
+            bodyHtml += `<div class="message-text">${messageHtml}</div>`;
+        }
+        if (hasImage) {
+            bodyHtml += `
+                <div class="message-image mt-2">
+                    <a href="${message.image_url}" target="_blank">
+                        <img src="${message.image_url}" alt="Shared image" class="img-fluid rounded shadow-sm chat-image">
+                    </a>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="message ${messageClass}">
+                <div class="message-header">
+                    <strong>${message.sender}</strong>
+                    <span class="message-time">${formatTime(message.created_at)}</span>
+                </div>
+                <div class="message-body">${bodyHtml}</div>
+            </div>
+        `;
+    }
+
+    // Format time
+    function formatTime(timeString) {
+        const date = new Date(timeString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        
+        return `${month} ${day}, ${hours}:${minutes}`;
+    }
+
+    // Add message to chat
+    function addMessage(message) {
+        const noMessages = chatMessages.querySelector('.no-messages');
+        if (noMessages) {
+            noMessages.remove();
+        }
+        
+        chatMessages.insertAdjacentHTML('beforeend', formatMessage(message));
+        scrollToBottom();
+        lastMessageId = message.id;
+    }
+
+    // Send message
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const messageText = messageInput.value.trim();
+        const hasImage = imageInput.files.length > 0;
+        if (!messageText && !hasImage) return;
+
+        // Disable form
+        sendButton.disabled = true;
+        messageInput.disabled = true;
+        imageInput.disabled = true;
+
+        const formData = new FormData();
+        formData.append('message', messageText);
+        if (hasImage) {
+            formData.append('image', imageInput.files[0]);
+        }
+
+        try {
+            const response = await fetch(sendMessageUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                addMessage(data.message);
+                messageInput.value = '';
+                imageInput.value = '';
+                imageName.textContent = '';
+            } else {
+                alert(data.error || 'Failed to send message. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            sendButton.disabled = false;
+            messageInput.disabled = false;
+            imageInput.disabled = false;
+            messageInput.focus();
+        }
+    });
+
+    // Poll for new messages
+    async function pollMessages() {
+        try {
+            const url = `${getMessagesUrl}?last_message_id=${lastMessageId}`;
+            const response = await fetch(url, {
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.messages) {
+                data.messages.forEach(message => {
+                    addMessage(message);
+                });
+            }
+        } catch (error) {
+            console.error('Error polling messages:', error);
+        }
+    }
+
+    // Start polling
+    pollingInterval = setInterval(pollMessages, 2000); // Poll every 2 seconds
+
+    // Initial scroll
+    scrollToBottom();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+        }
+    });
+</script>
+{% endblock %}

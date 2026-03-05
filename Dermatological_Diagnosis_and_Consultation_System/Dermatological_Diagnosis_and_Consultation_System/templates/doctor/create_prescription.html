@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Prescription - ClearDerm{% endblock %}
+
+{% block logout_url %}{% url 'doctor_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'doctor_profile' %}">
+    <i class="fas fa-user-circle me-2"></i>Profile
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="back-link mb-4">
+            <a href="{% url 'doctor_appointments' %}">
+                <i class="fas fa-arrow-left"></i>
+                Back to Appointments
+            </a>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>
+                <i class="fas fa-prescription-bottle-alt me-3"></i>Create Prescription
+            </h2>
+            
+            <div class="appointment-info mb-4 p-3 bg-light rounded">
+                <h5>Appointment Details</h5>
+                <p class="mb-1"><strong>Patient:</strong> {{ appointment.patient.user.get_full_name }}</p>
+                <p class="mb-1"><strong>Date:</strong> {{ appointment.appointment_date|date:"F d, Y" }} at {{ appointment.appointment_time|time:"H:i" }}</p>
+                <p class="mb-0"><strong>Type:</strong> {{ appointment.get_appointment_type_display }}</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="id_diagnosis" class="form-label">
+                        <i class="fas fa-stethoscope me-2"></i>Diagnosis <span class="text-danger">*</span>
+                    </label>
+                    {{ form.diagnosis }}
+                    {% if form.diagnosis.errors %}
+                        <div class="form-error text-danger">{{ form.diagnosis.errors|first }}</div>
+                    {% endif %}
+                    {% if form.diagnosis.help_text %}
+                        <small class="form-text text-muted">{{ form.diagnosis.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_medications" class="form-label">
+                        <i class="fas fa-pills me-2"></i>Medications <span class="text-danger">*</span>
+                    </label>
+                    {{ form.medications }}
+                    {% if form.medications.errors %}
+                        <div class="form-error text-danger">{{ form.medications.errors|first }}</div>
+                    {% endif %}
+                    {% if form.medications.help_text %}
+                        <small class="form-text text-muted">{{ form.medications.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_advice" class="form-label">
+                        <i class="fas fa-lightbulb me-2"></i>Advice & Follow-up Instructions
+                    </label>
+                    {{ form.advice }}
+                    {% if form.advice.errors %}
+                        <div class="form-error text-danger">{{ form.advice.errors|first }}</div>
+                    {% endif %}
+                    {% if form.advice.help_text %}
+                        <small class="form-text text-muted">{{ form.advice.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>Create Prescription
+                    </button>
+                    <a href="{% url 'doctor_appointments' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid var(--border-color);
+    }
+
+    .appointment-info {
+        background: var(--bg-light) !important;
+    }
+</style>
+{% endblock %}
