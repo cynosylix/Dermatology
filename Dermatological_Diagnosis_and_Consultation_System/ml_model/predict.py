@@ -6,21 +6,34 @@ import json
 import numpy as np
 from PIL import Image, ImageOps
 from django.conf import settings
-import tensorflow as tf
-from tensorflow import keras
 import logging
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Load model and class indices once when module is imported
+# Load model and class indices once when first used (TensorFlow loads only then)
 _model = None
 _class_indices = None
+_tf = None
+
+
+def _ensure_tf():
+    """Import TensorFlow on first use so Django management commands avoid loading it."""
+    global _tf
+    if _tf is None:
+        import tensorflow as tf
+
+        _tf = tf
+    return _tf
+
 
 def load_model():
     """Load the trained model and class indices"""
     global _model, _class_indices
-    
+
+    tf_mod = _ensure_tf()
+    keras = tf_mod.keras
+
     if _model is None:
         model_path = os.path.join(settings.BASE_DIR, 'ml_model', 'models', 'skin_disease_model.h5')
         if os.path.exists(model_path):
@@ -164,7 +177,7 @@ def predict_skin_disease(image_path, top_n=3, use_imagenet_norm=False, try_both_
                 # Apply softmax if needed
                 pred_sum = np.sum(predictions[0])
                 if pred_sum < 0.99 or pred_sum > 1.01:
-                    predictions = tf.nn.softmax(predictions, axis=-1).numpy()
+                    predictions = _ensure_tf().nn.softmax(predictions, axis=-1).numpy()
                 
                 all_predictions.append(predictions)
             except Exception as e:
@@ -193,7 +206,7 @@ def predict_skin_disease(image_path, top_n=3, use_imagenet_norm=False, try_both_
             predictions = model.predict(processed_image, verbose=0)
             pred_sum = np.sum(predictions[0])
             if pred_sum < 0.99 or pred_sum > 1.01:
-                predictions = tf.nn.softmax(predictions, axis=-1).numpy()
+                predictions = _ensure_tf().nn.softmax(predictions, axis=-1).numpy()
         
         # Get top N predictions
         top_indices = np.argsort(predictions[0])[-top_n:][::-1]

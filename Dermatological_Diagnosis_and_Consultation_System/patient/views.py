@@ -22,13 +22,23 @@ from django.shortcuts import get_object_or_404
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 
-# Import ML model predictor
-try:
-    from ml_model.predict import predict_skin_disease
-    ML_MODEL_AVAILABLE = True
-except ImportError as e:
-    print(f"ML model module not available: {str(e)}", file=sys.stderr)
-    ML_MODEL_AVAILABLE = False
+# ML predictor: import on first use so management commands (e.g. makemigrations) do not load TensorFlow
+_predict_skin_disease_fn = None
+
+
+def _get_predict_skin_disease():
+    global _predict_skin_disease_fn
+    if _predict_skin_disease_fn is False:
+        return None
+    if _predict_skin_disease_fn is None:
+        try:
+            from ml_model.predict import predict_skin_disease
+
+            _predict_skin_disease_fn = predict_skin_disease
+        except ImportError as e:
+            print(f"ML model module not available: {str(e)}", file=sys.stderr)
+            _predict_skin_disease_fn = False
+    return None if _predict_skin_disease_fn is False else _predict_skin_disease_fn
 
 def home(request):
     return render(request, 'home.html')
@@ -652,7 +662,8 @@ def chatbot_api(request):
         # If image is uploaded, run ML model prediction
         image_saved_path = None
         if image_file:
-            if not ML_MODEL_AVAILABLE:
+            predict_fn = _get_predict_skin_disease()
+            if not predict_fn:
                 prediction_results = {
                     'success': False,
                     'error': 'ML model is not available. Please ensure skin_disease_model.h5 is in ml_model/models/ directory.'
@@ -683,7 +694,7 @@ def chatbot_api(request):
                         raise ValueError("Failed to save image file")
                     
                     # Run prediction with improved preprocessing (try both normalization methods)
-                    prediction_results = predict_skin_disease(temp_image_path, try_both_norms=True)
+                    prediction_results = predict_fn(temp_image_path, try_both_norms=True)
                     
                     # Keep the file path for database storage
                     image_saved_path = temp_image_path

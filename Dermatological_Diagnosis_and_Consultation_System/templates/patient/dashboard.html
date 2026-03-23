@@ -8,9 +8,6 @@
 <a class="btn btn-outline-primary me-2" href="{% url 'patient_profile' %}">
     <i class="fas fa-user-circle me-2"></i>Profile
 </a>
-<button class="btn btn-outline-primary me-2" id="openChatbotBtn" type="button">
-    <i class="fas fa-robot me-2"></i>Chatbot
-</button>
 {% endblock %}
 
 {% block content %}
@@ -319,11 +316,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedImage = null;
     let imagePreviewElement = null;
 
-    // Open modal when chatbot button is clicked
-    openChatbotBtn.addEventListener('click', function() {
-        chatbotModal.show();
-        setTimeout(() => chatbotInput.focus(), 300);
-    });
+    // Open modal when chatbot nav button is present (kept hidden from navbar; modal still in page)
+    if (openChatbotBtn) {
+        openChatbotBtn.addEventListener('click', function() {
+            chatbotModal.show();
+            setTimeout(() => chatbotInput.focus(), 300);
+        });
+    }
 
     // Image upload button click
     chatbotUploadBtn.addEventListener('click', function() {
