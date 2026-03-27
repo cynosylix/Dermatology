@@ -61,6 +61,32 @@
     .doctor-name i {
         font-size: 1.5rem;
     }
+
+    .doctor-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .doctor-avatar {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border-color);
+    }
+
+    .doctor-avatar-fallback {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
     
     .specialization-badge {
         background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
@@ -204,10 +230,14 @@
                     <div class="col-md-6">
                         <div class="doctor-card">
                             <div class="doctor-header">
-                                <h3 class="doctor-name">
-                                    <i class="fas fa-user-md"></i>
-                                    Dr. {{ doctor.user.get_full_name }}
-                                </h3>
+                                <div class="doctor-title">
+                                    {% if doctor.profile_picture %}
+                                        <img src="{{ doctor.profile_picture.url }}" alt="Dr. {{ doctor.user.get_full_name }}" class="doctor-avatar">
+                                    {% else %}
+                                        <span class="doctor-avatar-fallback"><i class="fas fa-user-md"></i></span>
+                                    {% endif %}
+                                    <h3 class="doctor-name mb-0">Dr. {{ doctor.user.get_full_name }}</h3>
+                                </div>
                                 <span class="specialization-badge">{{ doctor.get_specialization_display }}</span>
                             </div>
                             

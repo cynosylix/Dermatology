@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Manage Doctors - Admin{% endblock %}
+{% block logout_url %}{% url 'adminpanel_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_dashboard' %}">
+    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2><i class="fas fa-user-md me-3"></i>Manage Doctors</h2>
+            <form class="mt-3 mb-3" method="get">
+                <input class="form-control" name="q" value="{{ q }}" placeholder="Search by name, username, license">
+            </form>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th><th>Username</th><th>Status</th><th>Hospital</th><th>User Active</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doctor in doctors %}
+                        <tr>
+                            <td>Dr. {{ doctor.user.get_full_name }}</td>
+                            <td>{{ doctor.user.username }}</td>
+                            <td>{{ doctor.get_approval_status_display }}</td>
+                            <td>{% if doctor.hospital %}{{ doctor.hospital.hospital_name }}{% else %}-{% endif %}</td>
+                            <td>{% if doctor.user.is_active %}Yes{% else %}No{% endif %}</td>
+                            <td>
+                                {% if doctor.approval_status == 'pending' %}
+                                <form method="post" action="{% url 'adminpanel_approve_doctor' doctor.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'adminpanel_manage_doctors' %}">
+                                    <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                                </form>
+                                <form method="post" action="{% url 'adminpanel_reject_doctor' doctor.id %}" style="display:inline;" class="ms-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'adminpanel_manage_doctors' %}">
+                                    <button class="btn btn-danger btn-sm" type="submit">Disapprove</button>
+                                </form>
+                                {% else %}
+                                <form method="post" action="{% url 'adminpanel_set_doctor_pending' doctor.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'adminpanel_manage_doctors' %}">
+                                    <button class="btn btn-secondary btn-sm" type="submit">Mark Pending Review</button>
+                                </form>
+                                {% endif %}
+                                {% if doctor.user.is_active %}
+                                <form method="post" action="{% url 'adminpanel_deactivate_user' doctor.user.id %}" style="display:inline;" class="ms-1">
+                                    {% csrf_token %}<input type="hidden" name="next" value="{% url 'adminpanel_manage_doctors' %}"><button class="btn btn-warning btn-sm" type="submit">Deactivate</button>
+                                </form>
+                                {% else %}
+                                <form method="post" action="{% url 'adminpanel_activate_user' doctor.user.id %}" style="display:inline;" class="ms-1">
+                                    {% csrf_token %}<input type="hidden" name="next" value="{% url 'adminpanel_manage_doctors' %}"><button class="btn btn-primary btn-sm" type="submit">Activate</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-muted">No doctors found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'patient',
     'doctor',
     'hospital',
+    'adminpanel',
 ]
 
 MIDDLEWARE = [

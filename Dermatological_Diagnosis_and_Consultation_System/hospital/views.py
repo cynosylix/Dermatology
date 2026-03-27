@@ -27,11 +27,15 @@ def hospital_register(request):
                     address=form.cleaned_data['address'],
                     phone_number=form.cleaned_data['phone_number'],
                     email=form.cleaned_data['hospital_email'],
-                    total_beds=form.cleaned_data['total_beds']
+                    total_beds=form.cleaned_data['total_beds'],
+                    approval_status='pending'
                 )
                 # Verify hospital was created
                 if hospital.pk:
-                    messages.success(request, 'Registration successful! Please login.')
+                    messages.success(
+                        request,
+                        'Registration submitted. Your account will be active after admin approval.'
+                    )
                     return redirect('hospital_login')
                 else:
                     messages.error(request, 'Failed to create hospital profile. Please try again.')
@@ -60,6 +64,19 @@ def hospital_login_view(request):
                 # Check if user is a hospital
                 try:
                     hospital = Hospital.objects.get(user=user)
+                    if hospital.approval_status != 'approved':
+                        if hospital.approval_status == 'rejected':
+                            reason = f" Reason: {hospital.rejection_reason}" if hospital.rejection_reason else ''
+                            messages.error(
+                                request,
+                                f'Your hospital account has not been approved by the administrator.{reason}'
+                            )
+                        else:
+                            messages.warning(
+                                request,
+                                'Your registration is under administrative review. You can sign in once approval is completed.'
+                            )
+                        return render(request, 'hospital/login.html', {'form': form})
                     login(request, user)
                     messages.success(request, f'Welcome back, {hospital.hospital_name}!')
                     return redirect('hospital_dashboard')
@@ -147,11 +164,15 @@ def hospital_add_doctor(request):
                     phone_number=form.cleaned_data['phone_number'],
                     years_of_experience=form.cleaned_data['years_of_experience'],
                     hospital=hospital,
-                    created_by_hospital=True
+                    created_by_hospital=True,
+                    approval_status='pending'
                 )
                 
                 if doctor.pk:
-                    messages.success(request, f'Doctor {user.get_full_name()} has been successfully added to your hospital!')
+                    messages.success(
+                        request,
+                        f'Doctor {user.get_full_name()} was added and is now pending admin approval.'
+                    )
                     return redirect('hospital_doctors')
                 else:
                     messages.error(request, 'Failed to create doctor profile. Please try again.')

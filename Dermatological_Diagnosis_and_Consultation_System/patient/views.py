@@ -243,21 +243,24 @@ def patient_chatbot_page(request):
 @login_required
 def doctor_list(request):
     """Display list of available doctors for patients to contact"""
-    doctors = Doctor.objects.all().order_by('-years_of_experience', 'user__first_name')
+    doctors = Doctor.objects.filter(approval_status='approved').order_by('-years_of_experience', 'user__first_name')
     return render(request, 'patient/doctor_list.html', {'doctors': doctors})
 
 @never_cache
 @login_required
 def hospital_list(request):
     """Display list of available hospitals for patients"""
-    hospitals = Hospital.objects.all().order_by('hospital_name')
+    hospitals = Hospital.objects.filter(approval_status='approved').order_by('hospital_name')
     return render(request, 'patient/hospital_list.html', {'hospitals': hospitals})
 
 @login_required
 def hospital_doctors(request, hospital_id):
     """Display doctors under a specific hospital"""
-    hospital = Hospital.objects.get(id=hospital_id)
-    doctors = Doctor.objects.filter(hospital=hospital).order_by('-years_of_experience', 'user__first_name')
+    hospital = get_object_or_404(Hospital, id=hospital_id, approval_status='approved')
+    doctors = Doctor.objects.filter(
+        hospital=hospital,
+        approval_status='approved'
+    ).order_by('-years_of_experience', 'user__first_name')
     return render(request, 'patient/hospital_doctors.html', {
         'hospital': hospital,
         'doctors': doctors
@@ -273,7 +276,7 @@ def view_doctor_schedules(request, doctor_id):
         messages.error(request, 'Patient profile not found.')
         return redirect('patient_logout')
     
-    doctor = get_object_or_404(Doctor, id=doctor_id)
+    doctor = get_object_or_404(Doctor, id=doctor_id, approval_status='approved')
     schedules = AppointmentSchedule.objects.filter(doctor=doctor, is_available=True).order_by('day_of_week', 'start_time')
     
     # Group schedules by day
@@ -305,7 +308,7 @@ def book_appointment(request, doctor_id, schedule_id):
         messages.error(request, 'Patient profile not found.')
         return redirect('patient_logout')
     
-    doctor = get_object_or_404(Doctor, id=doctor_id)
+    doctor = get_object_or_404(Doctor, id=doctor_id, approval_status='approved')
     schedule = get_object_or_404(AppointmentSchedule, id=schedule_id, doctor=doctor, is_available=True)
     
     if request.method == 'POST':
@@ -447,7 +450,7 @@ def appointment_chat(request, appointment_id):
         doctor = Doctor.objects.get(user=request.user)
         if appointment.doctor == doctor:
             is_doctor = True
-    except:
+    except Doctor.DoesNotExist:
         pass
     
     if not (is_patient or is_doctor):
@@ -515,7 +518,7 @@ def send_chat_message(request, appointment_id):
             doctor = Doctor.objects.get(user=request.user)
             if appointment.doctor == doctor:
                 is_authorized = True
-        except:
+        except Doctor.DoesNotExist:
             pass
     
     if not is_authorized:
@@ -580,7 +583,7 @@ def get_chat_messages(request, appointment_id):
             doctor = Doctor.objects.get(user=request.user)
             if appointment.doctor == doctor:
                 is_authorized = True
-        except:
+        except Doctor.DoesNotExist:
             pass
     
     if not is_authorized:
@@ -590,7 +593,7 @@ def get_chat_messages(request, appointment_id):
     last_message_id = request.GET.get('last_message_id', 0)
     try:
         last_message_id = int(last_message_id)
-    except:
+    except (TypeError, ValueError):
         last_message_id = 0
     
     # Get new messages
@@ -723,7 +726,7 @@ def chatbot_api(request):
                     if 'temp_image_path' in locals() and os.path.exists(temp_image_path):
                         try:
                             os.remove(temp_image_path)
-                        except:
+                        except OSError:
                             pass
         
         # Generate bot response based on user message and prediction
@@ -743,7 +746,7 @@ def chatbot_api(request):
                 if image_saved_path and os.path.exists(image_saved_path):
                     try:
                         os.remove(image_saved_path)
-                    except:
+                    except OSError:
                         pass
             else:
                 chat_message = ChatMessage.objects.create(**chat_message_data)
@@ -756,7 +759,7 @@ def chatbot_api(request):
             if image_saved_path and os.path.exists(image_saved_path):
                 try:
                     os.remove(image_saved_path)
-                except:
+                except OSError:
                     pass
             # Still return response even if saving fails
             chat_message = None
@@ -773,7 +776,7 @@ def chatbot_api(request):
             if chat_message.image:
                 try:
                     response_data['image_url'] = chat_message.image.url
-                except:
+                except (ValueError, OSError):
                     pass
         
         # Include prediction results in response (use ml_prediction to match JavaScript)

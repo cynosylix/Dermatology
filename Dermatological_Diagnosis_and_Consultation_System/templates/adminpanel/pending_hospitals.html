@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Hospital Pending Review - Admin{% endblock %}
+{% block logout_url %}{% url 'adminpanel_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_dashboard' %}">
+    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+</a>
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_pending_doctors' %}">
+    <i class="fas fa-user-md me-2"></i>Doctor Pending Review
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2><i class="fas fa-hospital me-3"></i>Hospital Pending Review</h2>
+            {% if hospitals %}
+                <div class="table-responsive mt-4">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Hospital</th>
+                                <th>Email</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hospital in hospitals %}
+                            <tr>
+                                <td>{{ hospital.hospital_name }}</td>
+                                <td>{{ hospital.email }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'adminpanel_approve_hospital' hospital.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'adminpanel_pending_hospitals' %}">
+                                        <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                                    </form>
+                                    <form method="post" action="{% url 'adminpanel_reject_hospital' hospital.id %}" style="display:inline;" class="ms-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'adminpanel_pending_hospitals' %}">
+                                        <input name="rejection_reason" class="form-control form-control-sm d-inline-block" style="width:180px;" placeholder="Disapproval reason (optional)">
+                                        <button class="btn btn-danger btn-sm" type="submit">Disapprove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="mt-4 text-muted">No hospitals in pending review.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

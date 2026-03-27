@@ -1,7 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
+
+indian_mobile_validator = RegexValidator(
+    regex=r'^[6-9][0-9]{9}$',
+    message='Enter a valid Indian mobile number (10 digits starting with 6-9).'
+)
 
 class Doctor(models.Model):
+    APPROVAL_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
     SPECIALIZATION_CHOICES = [
         ('dermatology', 'Dermatology'),
         ('general', 'General Practice'),
@@ -12,9 +24,16 @@ class Doctor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     license_number = models.CharField(max_length=50, unique=True)
     specialization = models.CharField(max_length=50, choices=SPECIALIZATION_CHOICES)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=10, validators=[indian_mobile_validator])
+    profile_picture = models.ImageField(upload_to='doctor_profiles/', null=True, blank=True)
     years_of_experience = models.IntegerField()
     hospital = models.ForeignKey('hospital.Hospital', on_delete=models.SET_NULL, null=True, blank=True, related_name='doctors')
+    approval_status = models.CharField(max_length=10, choices=APPROVAL_STATUS_CHOICES, default='pending')
+    approved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_doctors'
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     created_by_hospital = models.BooleanField(default=False)
     

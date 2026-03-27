@@ -12,6 +12,7 @@
         </div>
         <form method="post" action="{% url 'hospital_register' %}">
             {% csrf_token %}
+            {{ form.registration_number }}
             <div class="mb-4">
                 <label for="id_username" class="form-label">
                     <i class="fas fa-user me-2"></i>Username
@@ -60,15 +61,6 @@
                 {% endif %}
             </div>
             <div class="mb-4">
-                <label for="id_registration_number" class="form-label">
-                    <i class="fas fa-certificate me-2"></i>Registration Number
-                </label>
-                {{ form.registration_number }}
-                {% if form.registration_number.errors %}
-                    <div class="form-error">{{ form.registration_number.errors|first }}</div>
-                {% endif %}
-            </div>
-            <div class="mb-4">
                 <label for="id_address" class="form-label">
                     <i class="fas fa-map-marker-alt me-2"></i>Address
                 </label>
@@ -79,7 +71,7 @@
             </div>
             <div class="mb-4">
                 <label for="id_phone_number" class="form-label">
-                    <i class="fas fa-phone me-2"></i>Phone Number
+                    <i class="fas fa-phone me-2"></i>Mobile Number
                 </label>
                 {{ form.phone_number }}
                 {% if form.phone_number.errors %}

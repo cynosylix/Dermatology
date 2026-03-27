@@ -11,18 +11,25 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='ChatMessage',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('message', models.TextField()),
-                ('response', models.TextField()),
-                ('image', models.ImageField(blank=True, null=True, upload_to='chatbot_uploads/')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chat_messages', to='patient.patient')),
+        migrations.SeparateDatabaseAndState(
+            # Keep migration state so subsequent migrations work,
+            # but skip DB create to avoid duplicate table creation conflicts.
+            state_operations=[
+                migrations.CreateModel(
+                    name='ChatMessage',
+                    fields=[
+                        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                        ('message', models.TextField()),
+                        ('response', models.TextField()),
+                        ('image', models.ImageField(blank=True, null=True, upload_to='chatbot_uploads/')),
+                        ('created_at', models.DateTimeField(auto_now_add=True)),
+                        ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chat_messages', to='patient.patient')),
+                    ],
+                    options={
+                        'ordering': ['-created_at'],
+                    },
+                ),
             ],
-            options={
-                'ordering': ['-created_at'],
-            },
+            database_operations=[],
         ),
     ]

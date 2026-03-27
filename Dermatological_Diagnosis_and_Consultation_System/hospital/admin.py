@@ -3,7 +3,7 @@ from .models import Hospital
 
 @admin.register(Hospital)
 class HospitalAdmin(admin.ModelAdmin):
-    list_display = ['hospital_name', 'registration_number', 'phone_number', 'total_beds', 'created_at']
+    list_display = ['hospital_name', 'phone_number', 'total_beds', 'created_at']
     list_filter = ['created_at']
-    search_fields = ['hospital_name', 'registration_number', 'user__username', 'user__email']
+    search_fields = ['hospital_name', 'user__username', 'user__email']
 

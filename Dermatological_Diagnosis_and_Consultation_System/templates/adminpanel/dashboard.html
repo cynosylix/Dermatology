@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - ClearDerm{% endblock %}
+{% block logout_url %}{% url 'adminpanel_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_manage_doctors' %}">
+    <i class="fas fa-user-md me-2"></i>Doctors
+</a>
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_manage_hospitals' %}">
+    <i class="fas fa-hospital me-2"></i>Hospitals
+</a>
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_manage_patients' %}">
+    <i class="fas fa-user-injured me-2"></i>Patients
+</a>
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_pending_doctors' %}">
+    <i class="fas fa-user-md me-2"></i>Doctor Pending Review
+</a>
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_pending_hospitals' %}">
+    <i class="fas fa-hospital me-2"></i>Hospital Pending Review
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2><i class="fas fa-user-shield me-3"></i>Admin Control Dashboard</h2>
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Doctors in Pending Review:</strong> {{ pending_doctors_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Hospitals in Pending Review:</strong> {{ pending_hospitals_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Patients:</strong> {{ patients_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Approved Doctors:</strong> {{ approved_doctors_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Approved Hospitals:</strong> {{ approved_hospitals_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Total Appointments:</strong> {{ appointments_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Rejected Doctors:</strong> {{ rejected_doctors_count }}</div></div>
+                <div class="col-md-4 mb-3"><div class="info-section"><strong>Rejected Hospitals:</strong> {{ rejected_hospitals_count }}</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

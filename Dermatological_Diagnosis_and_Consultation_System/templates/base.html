@@ -88,6 +88,10 @@
             min-height: calc(100vh - 80px);
         }
 
+        .dashboard-container .container {
+            max-width: 1240px;
+        }
+
         .dashboard-card {
             background: white;
             border-radius: 20px;
@@ -122,7 +126,7 @@
             background: rgba(255, 255, 255, 0.98) !important;
             backdrop-filter: blur(20px);
             box-shadow: var(--shadow-md);
-            padding: 15px 0;
+            padding: 12px 0;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -143,6 +147,20 @@
             color: var(--text-gray) !important;
             font-weight: 500;
             margin-right: 20px;
+        }
+
+        .navbar-toggler {
+            border: none;
+            box-shadow: none !important;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .navbar-nav .btn {
@@ -384,6 +402,36 @@
             .navbar-brand {
                 font-size: 1.25rem;
             }
+
+            .dashboard-container {
+                padding: 18px 10px;
+            }
+
+            .dashboard-card h2 {
+                font-size: 1.45rem;
+                margin-bottom: 18px;
+                padding-bottom: 10px;
+            }
+
+            .navbar-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding-top: 10px;
+            }
+
+            .navbar-actions .btn,
+            .navbar-actions .navbar-text {
+                width: 100%;
+                margin: 0 !important;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .navbar-actions .btn {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -391,19 +439,24 @@
 <body>
     {% if user.is_authenticated %}
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+        <div class="container">
+            <a class="navbar-brand" href="{% if user.is_staff or user.is_superuser %}{% url 'adminpanel_dashboard' %}{% elif user.doctor %}{% url 'doctor_dashboard' %}{% elif user.hospital %}{% url 'hospital_dashboard' %}{% elif user.patient %}{% url 'patient_dashboard' %}{% else %}/{% endif %}">
                 <i class="fas fa-stethoscope"></i>
                 ClearDerm
             </a>
-            <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
-                {% block navbar_links %}{% endblock %}
-                <span class="navbar-text me-3">
-                    <i class="fas fa-user-circle me-2"></i>Welcome, {{ user.first_name }}!
-                </span>
-                <a class="btn btn-outline-danger" href="{% block logout_url %}{% endblock %}">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <div class="navbar-nav ms-auto navbar-actions">
+                    {% block navbar_links %}{% endblock %}
+                    <span class="navbar-text">
+                        <i class="fas fa-user-circle me-2"></i>Welcome, {{ user.first_name|default:user.username }}!
+                    </span>
+                    <a class="btn btn-outline-danger" href="{% block logout_url %}{% endblock %}">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                </div>
             </div>
         </div>
     </nav>

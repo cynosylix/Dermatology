@@ -8,6 +8,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('control/', include('adminpanel.urls')),
     path('', include('patient.urls')),
     path('doctor/', include('doctor.urls')),
     path('hospital/', include('hospital.urls')),

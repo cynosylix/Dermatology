@@ -4,7 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
 from django.db.models import Q
-from .forms import DoctorRegistrationForm, DoctorLoginForm, AppointmentScheduleForm, PrescriptionForm
+from .forms import (
+    DoctorRegistrationForm,
+    DoctorLoginForm,
+    DoctorProfilePictureForm,
+    AppointmentScheduleForm,
+    PrescriptionForm,
+)
 from .models import Doctor, AppointmentSchedule
 from patient.models import Appointment, ChatMessage, Prescription
 from django.http import JsonResponse
@@ -16,7 +22,7 @@ def doctor_register(request):
         return redirect('doctor_dashboard')
     
     if request.method == 'POST':
-        form = DoctorRegistrationForm(request.POST)
+        form = DoctorRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 # Save the user
@@ -28,11 +34,16 @@ def doctor_register(request):
                     license_number=form.cleaned_data['license_number'],
                     specialization=form.cleaned_data['specialization'],
                     phone_number=form.cleaned_data['phone_number'],
-                    years_of_experience=form.cleaned_data['years_of_experience']
+                    profile_picture=form.cleaned_data['profile_picture'],
+                    years_of_experience=form.cleaned_data['years_of_experience'],
+                    approval_status='pending'
                 )
                 # Verify doctor was created
                 if doctor.pk:
-                    messages.success(request, 'Registration successful! Please login.')
+                    messages.success(
+                        request,
+                        'Registration submitted. Your account will be active after admin approval.'
+                    )
                     return redirect('doctor_login')
                 else:
                     messages.error(request, 'Failed to create doctor profile. Please try again.')
@@ -61,6 +72,19 @@ def doctor_login_view(request):
                 # Check if user is a doctor
                 try:
                     doctor = Doctor.objects.get(user=user)
+                    if doctor.approval_status != 'approved':
+                        if doctor.approval_status == 'rejected':
+                            reason = f" Reason: {doctor.rejection_reason}" if doctor.rejection_reason else ''
+                            messages.error(
+                                request,
+                                f'Your doctor account has not been approved by the administrator.{reason}'
+                            )
+                        else:
+                            messages.warning(
+                                request,
+                                'Your registration is under administrative review. You can sign in once approval is completed.'
+                            )
+                        return render(request, 'doctor/login.html', {'form': form})
                     login(request, user)
                     messages.success(request, f'Welcome back, Dr. {user.first_name}!')
                     return redirect('doctor_dashboard')
@@ -96,7 +120,21 @@ def doctor_profile(request):
     except Doctor.DoesNotExist:
         messages.error(request, 'Doctor profile not found.')
         return redirect('doctor_logout')
-    response = render(request, 'doctor/profile.html', {'doctor': doctor})
+
+    if request.method == 'POST':
+        if 'profile_picture' not in request.FILES:
+            messages.error(request, 'Please select an image before uploading.')
+            return redirect('doctor_profile')
+        picture_form = DoctorProfilePictureForm(request.POST, request.FILES, instance=doctor)
+        if picture_form.is_valid():
+            picture_form.save()
+            messages.success(request, 'Profile picture updated successfully.')
+            return redirect('doctor_profile')
+        messages.error(request, 'Please upload a valid image file.')
+    else:
+        picture_form = DoctorProfilePictureForm(instance=doctor)
+
+    response = render(request, 'doctor/profile.html', {'doctor': doctor, 'picture_form': picture_form})
     # Add cache control headers
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response['Pragma'] = 'no-cache'
@@ -445,7 +483,7 @@ def view_prescription(request, prescription_id):
             if prescription.patient == patient:
                 is_authorized = True
                 is_patient = True
-        except:
+        except Patient.DoesNotExist:
             pass
     
     if not is_authorized:
@@ -454,12 +492,12 @@ def view_prescription(request, prescription_id):
             try:
                 Doctor.objects.get(user=request.user)
                 return redirect('doctor_prescriptions')
-            except:
+            except Doctor.DoesNotExist:
                 from patient.models import Patient
                 try:
                     Patient.objects.get(user=request.user)
                     return redirect('patient_prescriptions')
-                except:
+                except Patient.DoesNotExist:
                     pass
         return redirect('home')
     

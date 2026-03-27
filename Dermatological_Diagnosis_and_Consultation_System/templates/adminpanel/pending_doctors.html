@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctor Pending Review - Admin{% endblock %}
+{% block logout_url %}{% url 'adminpanel_logout' %}{% endblock %}
+
+{% block navbar_links %}
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_dashboard' %}">
+    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+</a>
+<a class="btn btn-outline-primary me-2" href="{% url 'adminpanel_pending_hospitals' %}">
+    <i class="fas fa-hospital me-2"></i>Hospital Pending Review
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-card">
+            <h2><i class="fas fa-user-md me-3"></i>Doctor Pending Review</h2>
+            {% if doctors %}
+                <div class="table-responsive mt-4">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>License</th>
+                                <th>Specialization</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doctor in doctors %}
+                            <tr>
+                                <td>Dr. {{ doctor.user.get_full_name }}</td>
+                                <td>{{ doctor.user.email }}</td>
+                                <td>{{ doctor.license_number }}</td>
+                                <td>{{ doctor.get_specialization_display }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'adminpanel_approve_doctor' doctor.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'adminpanel_pending_doctors' %}">
+                                        <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                                    </form>
+                                    <form method="post" action="{% url 'adminpanel_reject_doctor' doctor.id %}" style="display:inline;" class="ms-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'adminpanel_pending_doctors' %}">
+                                        <input name="rejection_reason" class="form-control form-control-sm d-inline-block" style="width:180px;" placeholder="Disapproval reason (optional)">
+                                        <button class="btn btn-danger btn-sm" type="submit">Disapprove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="mt-4 text-muted">No doctors in pending review.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

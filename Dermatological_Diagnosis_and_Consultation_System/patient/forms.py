@@ -5,6 +5,17 @@ from .models import Patient, Appointment
 from doctor.models import Doctor, AppointmentSchedule
 from datetime import date, datetime, timedelta
 from django.utils import timezone
+import re
+
+
+def _is_strong_indian_mobile(phone_number: str) -> bool:
+    if not re.fullmatch(r'[6-9][0-9]{9}', phone_number):
+        return False
+    if len(set(phone_number)) == 1:
+        return False
+    if phone_number in {'9876543210', '1234567890'}:
+        return False
+    return True
 
 class PatientRegistrationForm(UserCreationForm):
     first_name = forms.CharField(
@@ -46,9 +57,19 @@ class PatientRegistrationForm(UserCreationForm):
             raise forms.ValidationError('Please select your gender')
         return gender
     phone_number = forms.CharField(
-        max_length=15, 
+        max_length=10,
         required=False, 
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone number (optional)'})
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter 10-digit mobile number (optional, without +91)',
+                'maxlength': '10',
+                'minlength': '10',
+                'inputmode': 'numeric',
+                'pattern': '[6-9][0-9]{9}',
+                'title': 'Enter 10-digit mobile number without country code',
+            }
+        )
     )
     date_of_birth = forms.DateField(
         required=False, 
@@ -79,6 +100,22 @@ class PatientRegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("This email is already registered. Please use another email.")
+        return email
+
+    def clean_phone_number(self):
+        phone_number = (self.cleaned_data.get('phone_number') or '').strip()
+        if not phone_number:
+            return ''
+        if not _is_strong_indian_mobile(phone_number):
+            raise forms.ValidationError(
+                "Enter a valid Indian mobile number (10 digits, starts with 6-9, and not a dummy sequence)."
+            )
+        return phone_number
 
 class PatientLoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
